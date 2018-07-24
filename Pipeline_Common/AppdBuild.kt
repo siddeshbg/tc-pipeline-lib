@@ -10,7 +10,7 @@ open class AppdBuild() : Project() {
         parentId("_Root")
         name = "My Project 3"
 
-        vcsRoot(Pipeline_Common_github)
+        //vcsRoot(Pipeline_Common_github)
 
         buildType(SayHello)
         buildType(Clean)
