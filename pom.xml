@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<!--
+   DEVELOPER NOTES:
+        This POM demonstrates how to create a custom library for TeamCity. It's a pretty standard and generic POM
+        file that was based on what TeamCity generates inside the .teamcity directory. It compiles all the kotlin
+        files under the current directory (except for .teamcity) and packages them into a jar file.
+
+        To build, use versions:set to replace the 0.1-SNAPSHOT version with the version number of your choice. This
+        will directly edit the POM file. Then run the package goal. These two goals cannot be stacked in the same
+        command because maven must re-read the POM file to pick up the new version number.
+
+        mvn -DnewVersion=<build number> versions:set
+        mvn package
+
+		* repositories/repository/teamcity-server must point to the correct teamcity instance (dev/prod)
+		* repositories/repository - an entry for nexus3 must exist
+		* distributionManagement/repository - An entry must exist for nexus3-releases
+-->
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <name>Teamcity Pipeline Common Library</name>
+    <properties>
+        <kotlin.version>1.2.41</kotlin.version>
+        <teamcity.dsl.version>2018.1</teamcity.dsl.version>
+    </properties>
+    <groupId>com.appdynamics.build</groupId>
+    <artifactId>common-tc-pipeline</artifactId>
+    <version>0.1-SNAPSHOT</version>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://nexus3.corp.appdynamics.com/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>nexus3-releases</id>
+            <url>https://nexus3.corp.appdynamics.com/repository/maven-releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>teamcity-server</id>
+            <url>https://teamcity.corp.appdynamics.com/app/dsl-plugins-repository</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>JetBrains</id>
+            <url>http://download.jetbrains.com/teamcity-repository</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <url>https://nexus3.corp.appdynamics.com/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>JetBrains</id>
+            <url>http://download.jetbrains.com/teamcity-repository</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <build>
+        <sourceDirectory>.</sourceDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <version>${kotlin.version}</version>
+
+                <configuration/>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>process-test-sources</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.teamcity</groupId>
+                <artifactId>teamcity-configs-maven-plugin</artifactId>
+                <version>${teamcity.dsl.version}</version>
+                <configuration>
+                    <format>kotlin</format>
+                    <dstDir>target/generated-configs</dstDir>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.teamcity</groupId>
+            <artifactId>configs-dsl-kotlin</artifactId>
+            <version>${teamcity.dsl.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.teamcity</groupId>
+            <artifactId>configs-dsl-kotlin-plugins</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>nexus3-snapshots</id>
+            <name>AppD Nexus3 Snapshots</name>
+            <url>https://nexus3.corp.appdynamics.com/repository/maven-snapshots</url>
+        </snapshotRepository>
+
+        <repository>
+            <id>nexus3-releases</id>
+            <name>AppD Nexus3 Releases</name>
+            <url>https://nexus3.corp.appdynamics.com/repository/maven-releases</url>
+        </repository>
+    </distributionManagement>
+</project>
